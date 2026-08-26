@@ -1,22 +1,38 @@
 // ============================================================
 // CONFIGURATION DES FERMES
-// Pour changer les noms/animaux, ou ajouter une 4e ferme,
+// Pour changer les noms/animaux/adresses, ou ajouter une 4e ferme,
 // modifie seulement cette liste. Le "code" doit être exactement
 // le texte encodé dans le QR code affiché à cette ferme.
 // ============================================================
 const FERMES = [
-  { code: "FERME_1", nom: "Ferme des Vaches",  animal: "🐄" },
-  { code: "FERME_2", nom: "Ferme des Moutons", animal: "🐑" },
-  { code: "FERME_3", nom: "Ferme des Poules",  animal: "🐔" },
+  {
+    code: "FERME_1",
+    nom: "Ferme Marineau",
+    animal: "🐄",
+    logo: "https://fermemarineau.com/cdn/shop/files/Ferme-Marineau.png?v=1775406006&width=200",
+    adresse: "4356 Boul Dagenais O, Laval QC H7R 1L5",
+  },
+  {
+    code: "FERME_2",
+    nom: "Ferme des Moutons",
+    animal: "🐑",
+    logo: null,
+    adresse: "Adresse à venir",
+  },
+  {
+    code: "FERME_3",
+    nom: "Ferme des Poules",
+    animal: "🐔",
+    logo: null,
+    adresse: "Adresse à venir",
+  },
 ];
 
-// --- clés localStorage ---
 const CLE_VILLE = "ferme_ville";
 const CLE_VISITES = "ferme_visites";
 const CLE_INSCRIT = "ferme_inscrit";
-const CLE_ATTENTE = "ferme_file_attente"; // requêtes à réessayer si le serveur est injoignable
+const CLE_ATTENTE = "ferme_file_attente";
 
-// --- éléments ---
 const ecrans = {
   ville: document.getElementById("screen-ville"),
   carnet: document.getElementById("screen-carnet"),
@@ -37,9 +53,6 @@ function setVisites(liste) {
   localStorage.setItem(CLE_VISITES, JSON.stringify(liste));
 }
 
-// ============================================================
-// ENVOI AU SERVEUR (avec file d'attente si hors-ligne)
-// ============================================================
 async function envoyerAuServeur(chemin, donnees) {
   try {
     const reponse = await fetch(`${API_BASE_URL}${chemin}`, {
@@ -50,8 +63,6 @@ async function envoyerAuServeur(chemin, donnees) {
     if (!reponse.ok) throw new Error("Réponse serveur non-OK");
     return true;
   } catch (err) {
-    // Le serveur est injoignable (mauvais wifi, etc.) : on garde la donnée
-    // en mémoire locale et on réessaiera plus tard.
     const file = JSON.parse(localStorage.getItem(CLE_ATTENTE) || "[]");
     file.push({ chemin, donnees });
     localStorage.setItem(CLE_ATTENTE, JSON.stringify(file));
@@ -70,9 +81,6 @@ async function reessayerFileAttente() {
   localStorage.setItem(CLE_ATTENTE, JSON.stringify(restants));
 }
 
-// ============================================================
-// ÉCRAN 1 : VILLE
-// ============================================================
 const inputVille = document.getElementById("input-ville");
 const erreurVille = document.getElementById("erreur-ville");
 
@@ -87,9 +95,6 @@ document.getElementById("btn-commencer").addEventListener("click", () => {
   afficherCarnet();
 });
 
-// ============================================================
-// ÉCRAN 2 : CARNET
-// ============================================================
 function afficherCarnet() {
   const visites = getVisites();
   const liste = document.getElementById("liste-fermes");
@@ -99,11 +104,19 @@ function afficherCarnet() {
     const visitee = visites.includes(f.code);
     const carte = document.createElement("div");
     carte.className = "carte-ferme" + (visitee ? " visitee" : "");
+
+    const icone = f.logo
+      ? `<img src="${f.logo}" alt="${f.nom}" class="logo-ferme">`
+      : f.animal;
+
+    const lienMaps = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(f.adresse)}`;
+
     carte.innerHTML = `
-      <div class="animal-ferme">${f.animal}</div>
+      <div class="animal-ferme">${icone}</div>
       <div class="info-ferme">
         <div class="nom-ferme">${f.nom}</div>
         <div class="statut-ferme ${visitee ? "ok" : ""}">${visitee ? "Visitée !" : "Pas encore visitée"}</div>
+        <a class="lien-itineraire" href="${lienMaps}" target="_blank" rel="noopener">📍 Itinéraire</a>
       </div>
       <div class="coche">${visitee ? "✅" : "⬜"}</div>
     `;
@@ -120,9 +133,6 @@ function afficherCarnet() {
   }
 }
 
-// ============================================================
-// ÉCRAN 3 : SCANNER
-// ============================================================
 let lecteurQR = null;
 const messageScanner = document.getElementById("scan-message");
 
@@ -137,7 +147,7 @@ function demarrerScanner() {
     { facingMode: "environment" },
     { fps: 10, qrbox: 240 },
     onScanReussi,
-    () => {} // erreurs de lecture image par image : on les ignore
+    () => {}
   ).catch(() => {
     messageScanner.textContent = "Impossible d'accéder à la caméra. Vérifie les autorisations du navigateur.";
   });
@@ -177,9 +187,6 @@ function onScanReussi(texteDecode) {
   }, 900);
 }
 
-// ============================================================
-// ÉCRAN 4 : INSCRIPTION AU TIRAGE
-// ============================================================
 document.getElementById("btn-inscrire").addEventListener("click", async () => {
   const prenom = document.getElementById("input-prenom").value.trim();
   const nom = document.getElementById("input-nom").value.trim();
@@ -198,9 +205,6 @@ document.getElementById("btn-inscrire").addEventListener("click", async () => {
   afficherEcran("merci");
 });
 
-// ============================================================
-// DÉMARRAGE DE L'APPLICATION
-// ============================================================
 (function demarrer() {
   reessayerFileAttente();
 
