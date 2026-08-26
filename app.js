@@ -145,3 +145,120 @@ function afficherCarnet() {
     `;
     liste.appendChild(carte);
   });
+
+  document.getElementById("compteur-texte").textContent =
+    `${visites.length} sur ${FERMES.length} fermes visitées`;
+
+  afficherEcran("carnet");
+
+  if (visites.length >= FERMES.length && !localStorage.getItem(CLE_INSCRIT)) {
+    setTimeout(() => afficherEcran("inscription"), 600);
+  }
+}
+
+let lecteurQR = null;
+const messageScanner = document.getElementById("scan-message");
+
+document.getElementById("btn-scanner").addEventListener("click", demarrerScanner);
+document.getElementById("btn-fermer-scanner").addEventListener("click", arreterScanner);
+
+function demarrerScanner() {
+  afficherEcran("scanner");
+  messageScanner.textContent = "";
+  lecteurQR = new Html5Qrcode("qr-reader");
+  lecteurQR.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 240 },
+    onScanReussi,
+    () => {}
+  ).catch(() => {
+    messageScanner.textContent = "Impossible d'accéder à la caméra. Vérifie les autorisations du navigateur.";
+  });
+}
+
+function arreterScanner() {
+  if (lecteurQR) {
+    lecteurQR.stop().then(() => lecteurQR.clear()).catch(() => {});
+  }
+  afficherCarnet();
+}
+
+function onScanReussi(texteDecode) {
+  const texte = texteDecode.trim();
+  let code;
+  if (texte.includes("ferme=")) {
+    code = new URL(texte).searchParams.get("ferme");
+  } else {
+    code = texte;
+  }
+  code = (code || "").toUpperCase();
+
+  const ferme = FERMES.find(f => f.code === code);
+
+  if (!ferme) {
+    messageScanner.textContent = "Ce QR code ne correspond à aucune ferme 🤔";
+    return;
+  }
+
+  const visites = getVisites();
+  if (visites.includes(ferme.code)) {
+    messageScanner.textContent = `Tu as déjà visité ${ferme.nom} !`;
+    return;
+  }
+
+  visites.push(ferme.code);
+  setVisites(visites);
+  messageScanner.textContent = `${ferme.animal} ${ferme.nom} ajoutée à ton carnet !`;
+
+  if (navigator.vibrate) navigator.vibrate(120);
+
+  setTimeout(() => {
+    if (lecteurQR) lecteurQR.stop().then(() => lecteurQR.clear()).catch(() => {});
+    afficherCarnet();
+  }, 900);
+}
+
+document.getElementById("btn-inscrire").addEventListener("click", async () => {
+  const prenom = document.getElementById("input-prenom").value.trim();
+  const nom = document.getElementById("input-nom").value.trim();
+  const contact = document.getElementById("input-contact").value.trim();
+  const erreur = document.getElementById("erreur-inscription");
+
+  if (!prenom || !nom || !contact) {
+    erreur.textContent = "Remplis tous les champs pour participer au tirage.";
+    return;
+  }
+
+  const ville = localStorage.getItem(CLE_VILLE) || "";
+  await envoyerAuServeur("/api/inscription", { prenom, nom, contact, ville });
+
+  localStorage.setItem(CLE_INSCRIT, "1");
+  afficherEcran("merci");
+});
+
+(function demarrer() {
+  reessayerFileAttente();
+
+  const fermeUrl = obtenirParamUrl("ferme");
+  if (fermeUrl) {
+    window.history.replaceState({}, "", window.location.pathname);
+  }
+
+  const villeDejaConnue = localStorage.getItem(CLE_VILLE);
+  const dejaInscrit = localStorage.getItem(CLE_INSCRIT);
+
+  if (!villeDejaConnue) {
+    fermeEnAttente = fermeUrl;
+    afficherEcran("ville");
+    return;
+  }
+
+  if (fermeUrl) enregistrerVisite(fermeUrl);
+
+  if (dejaInscrit) {
+    afficherEcran("merci");
+    return;
+  }
+
+  afficherCarnet();
+})();
