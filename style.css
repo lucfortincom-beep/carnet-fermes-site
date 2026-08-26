@@ -1,12 +1,12 @@
 :root {
   --soleil: #FFC847;
-  --grange: #E8543E;
-  --prairie: #4F9D5A;
-  --ciel: #5EC4E0;
-  --creme: #FFF8EA;
+  --grange: #D62828;
+  --prairie: #2E8B57;
+  --ciel: #8FCFE8;
+  --creme: #FFFAF5;
   --terre: #5C3D28;
   --blanc: #FFFFFF;
-  --ombre: rgba(92, 61, 40, 0.18);
+  --ombre: rgba(46, 74, 61, 0.18);
 }
 
 * { box-sizing: border-box; }
@@ -28,16 +28,18 @@ h1, h2 {
   line-height: 1.1;
 }
 
-/* --- décor de fond --- */
-.ciel { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-.soleil { position: absolute; top: 4%; right: 8%; font-size: 48px; animation: flotter 6s ease-in-out infinite; }
-.nuage { position: absolute; font-size: 34px; opacity: 0.9; }
-.n1 { top: 8%; left: 10%; animation: derive 22s linear infinite; }
-.n2 { top: 16%; left: 60%; animation: derive 28s linear infinite reverse; font-size: 26px; }
+.ciel { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.etoile { position: absolute; top: 4%; right: 8%; font-size: 42px; animation: flotter 6s ease-in-out infinite; }
+.traineau { position: absolute; top: 9%; left: 0; font-size: 34px; white-space: nowrap; animation: derive 16s linear infinite; }
+.flocon { position: absolute; top: -8%; font-size: 20px; opacity: 0.85; animation: neige linear infinite; }
+.f1 { left: 12%; font-size: 18px; animation-duration: 9s; animation-delay: 0s; }
+.f2 { left: 42%; font-size: 14px; animation-duration: 12s; animation-delay: 2.5s; }
+.f3 { left: 68%; font-size: 22px; animation-duration: 10s; animation-delay: 1s; }
+.f4 { left: 88%; font-size: 16px; animation-duration: 13s; animation-delay: 4s; }
 @keyframes flotter { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-@keyframes derive { from { transform: translateX(-10vw); } to { transform: translateX(110vw); } }
+@keyframes derive { from { transform: translateX(-15vw); } to { transform: translateX(115vw); } }
+@keyframes neige { from { top: -8%; } to { top: 105%; } }
 
-/* --- écrans --- */
 .screen {
   position: relative;
   z-index: 1;
@@ -112,7 +114,6 @@ input[type="text"]:focus { border-color: var(--prairie); }
 
 .erreur { color: var(--grange); font-weight: 800; font-size: 13px; min-height: 18px; margin-top: 10px; }
 
-/* --- carnet des fermes --- */
 .entete-carnet { text-align: center; margin-top: 4vh; margin-bottom: 18px; }
 #compteur-texte { font-weight: 800; color: var(--prairie); font-size: 16px; }
 
@@ -156,15 +157,24 @@ input[type="text"]:focus { border-color: var(--prairie); }
   justify-content: center;
   background: var(--creme);
 }
+.logo-ferme { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; background: var(--blanc); }
 .info-ferme { flex: 1; text-align: left; }
 .info-ferme .nom-ferme { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 16px; }
 .statut-ferme { font-size: 13px; font-weight: 800; color: #B0A190; }
 .statut-ferme.ok { color: var(--prairie); }
+.lien-itineraire {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ciel);
+  text-decoration: none;
+}
+.lien-itineraire:active { opacity: 0.6; }
 .coche { font-size: 26px; }
 
 .astuce { margin-top: 20px; font-size: 13px; color: #8A7461; text-align: center; }
 
-/* --- scanner --- */
 .overlay-scan {
   background: #101617;
   min-height: 100vh;
