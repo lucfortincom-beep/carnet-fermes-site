@@ -1,6 +1,6 @@
 // ============================================================
 // CONFIGURATION DES FERMES
-// Pour changer les noms/animaux/adresses, ou ajouter une 4e ferme,
+// Pour changer les noms/animaux, ou ajouter une 4e ferme,
 // modifie seulement cette liste. Le "code" doit être exactement
 // le texte encodé dans le QR code affiché à cette ferme.
 // ============================================================
@@ -53,6 +53,23 @@ function setVisites(liste) {
   localStorage.setItem(CLE_VISITES, JSON.stringify(liste));
 }
 
+function obtenirParamUrl(nom) {
+  return new URLSearchParams(window.location.search).get(nom);
+}
+
+let fermeEnAttente = null;
+
+function enregistrerVisite(code) {
+  const ferme = FERMES.find(f => f.code === code);
+  if (!ferme) return;
+  const visites = getVisites();
+  if (!visites.includes(ferme.code)) {
+    visites.push(ferme.code);
+    setVisites(visites);
+    if (navigator.vibrate) navigator.vibrate(120);
+  }
+}
+
 async function envoyerAuServeur(chemin, donnees) {
   try {
     const reponse = await fetch(`${API_BASE_URL}${chemin}`, {
@@ -92,6 +109,12 @@ document.getElementById("btn-commencer").addEventListener("click", () => {
   }
   localStorage.setItem(CLE_VILLE, ville);
   envoyerAuServeur("/api/ville", { ville });
+
+  if (fermeEnAttente) {
+    enregistrerVisite(fermeEnAttente);
+    fermeEnAttente = null;
+  }
+
   afficherCarnet();
 });
 
@@ -208,17 +231,26 @@ document.getElementById("btn-inscrire").addEventListener("click", async () => {
 (function demarrer() {
   reessayerFileAttente();
 
+  const fermeUrl = obtenirParamUrl("ferme");
+  if (fermeUrl) {
+    window.history.replaceState({}, "", window.location.pathname);
+  }
+
   const villeDejaConnue = localStorage.getItem(CLE_VILLE);
   const dejaInscrit = localStorage.getItem(CLE_INSCRIT);
-  const visites = getVisites();
 
   if (!villeDejaConnue) {
+    fermeEnAttente = fermeUrl;
     afficherEcran("ville");
-  } else if (dejaInscrit) {
-    afficherEcran("merci");
-  } else if (visites.length >= FERMES.length) {
-    afficherEcran("inscription");
-  } else {
-    afficherCarnet();
+    return;
   }
+
+  if (fermeUrl) enregistrerVisite(fermeUrl);
+
+  if (dejaInscrit) {
+    afficherEcran("merci");
+    return;
+  }
+
+  afficherCarnet();
 })();
