@@ -9,7 +9,7 @@ const FERMES = [
     code: "FERME_1",
     nom: "Ferme Marineau",
     animal: "🍓",
-    logo: null,
+    logo: "https://fermemarineau.com/cdn/shop/files/Ferme-Marineau.png?v=1775406006&width=300",
     adresse: "4356 Boul Dagenais O, Laval QC H7R 1L5",
   },
   {
