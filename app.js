@@ -74,7 +74,7 @@ function enregistrerVisite(code) {
   if (!visites.includes(ferme.code)) {
     visites.push(ferme.code);
     setVisites(visites);
-    envoyerAuServeur("/api/scan", { code: ferme.code });
+    envoyerAuServeur("/api/visite-ferme", { code: ferme.code });
     if (navigator.vibrate) navigator.vibrate(120);
   }
 }
@@ -233,7 +233,7 @@ function onScanReussi(texteDecode) {
 
   visites.push(ferme.code);
   setVisites(visites);
-  envoyerAuServeur("/api/scan", { code: ferme.code });
+  envoyerAuServeur("/api/visite-ferme", { code: ferme.code });
   messageScanner.textContent = `${ferme.animal} ${ferme.nom} ajoutée à ton carnet !`;
 
   if (navigator.vibrate) navigator.vibrate(120);
@@ -269,6 +269,14 @@ document.getElementById("btn-inscrire").addEventListener("click", async () => {
 // DÉMARRAGE DE L'APPLICATION
 // ============================================================
 (function demarrer() {
+  if (obtenirParamUrl("reset")) {
+    localStorage.removeItem(CLE_VILLE);
+    localStorage.removeItem(CLE_VISITES);
+    localStorage.removeItem(CLE_INSCRIT);
+    localStorage.removeItem(CLE_ATTENTE);
+    window.history.replaceState({}, "", window.location.pathname);
+  }
+
   reessayerFileAttente();
 
   const fermeUrl = obtenirParamUrl("ferme");
