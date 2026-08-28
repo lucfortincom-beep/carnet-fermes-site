@@ -21,11 +21,10 @@ const FERMES = [
   },
   {
     code: "FERME_3",
-    nom: "Ferme des Poules",
-    animal: "🐔",
-    logo: null,
-    // 👉 Remplace le texte ci-dessous par la vraie adresse de cette ferme.
-    adresse: "Adresse à venir",
+    nom: "Château Taillefer Lafon",
+    animal: "🍇",
+    logo: "https://www.chateautailleferlafon.ca/wp-content/uploads/brizy/230/assets/images/iW=225&iH=205&oX=0&oY=8&cW=225&cH=189/logo3.png",
+    adresse: "1500 Montée Champagne, Laval, QC H7X 4H9",
   },
 ];
 
@@ -75,6 +74,7 @@ function enregistrerVisite(code) {
   if (!visites.includes(ferme.code)) {
     visites.push(ferme.code);
     setVisites(visites);
+    envoyerAuServeur("/api/scan", { code: ferme.code });
     if (navigator.vibrate) navigator.vibrate(120);
   }
 }
@@ -233,6 +233,7 @@ function onScanReussi(texteDecode) {
 
   visites.push(ferme.code);
   setVisites(visites);
+  envoyerAuServeur("/api/scan", { code: ferme.code });
   messageScanner.textContent = `${ferme.animal} ${ferme.nom} ajoutée à ton carnet !`;
 
   if (navigator.vibrate) navigator.vibrate(120);
