@@ -10,4 +10,4 @@
 //   "https://ferme.tondomaine.com"     (si tu utilises un sous-domaine)
 // ============================================================
 
-const API_BASE_URL = "http://REMPLACE-MOI:3000";
+const API_BASE_URL = "https://carnet-ferme-backend.onrender.com";
